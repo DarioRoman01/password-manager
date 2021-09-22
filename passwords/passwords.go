@@ -50,3 +50,7 @@ func GeneratePassword() string {
 
 	return string(inRune)
 }
+
+// func encryptPassword(pwd string) ([]byte, error) {
+
+// }

@@ -10,39 +10,34 @@ import (
 	"os"
 )
 
-func Encrypt(key, text []byte) {
+func Encrypt(key, text []byte) error {
 	c, err := aes.NewCipher(key)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	encrypted := gcm.Seal(nonce, nonce, text, nil)
 
 	file, err := os.Create("claves.txt")
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	if _, err := file.Write(encrypted); err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
-	fmt.Println("claves encryptadas uwu")
+	return nil
 }
 
 func EncryptFile(name string, key []byte) {
