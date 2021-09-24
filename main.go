@@ -45,6 +45,53 @@ func SeePasswordsTab() *container.TabItem {
 	return tab
 }
 
+func SetPasswordTab() *container.TabItem {
+	tab := container.NewTabItem("Set Password", widget.NewLabel("Content of tab 1"))
+	label := widget.NewLabel("Set Password")
+
+	keyEntry := widget.Entry{PlaceHolder: "Key"}
+	Pwdentry := widget.Entry{PlaceHolder: "new password"}
+
+	tab.Content = container.NewVBox(
+		label,
+		&keyEntry,
+		&Pwdentry,
+		widget.NewButton("add password", func() {
+			key := keyEntry.Text
+			pwd := Pwdentry.Text
+			err := encrypt.AddPassword([]byte(pwd), []byte(key))
+			if err != nil {
+				label.SetText("Something wrong happend")
+				return
+			}
+
+			label.SetText("password added succesfully")
+		}),
+	)
+
+	return tab
+}
+
+func InitSessionView(w fyne.Window) (err error) {
+	label := widget.NewLabel("Insert encryption password")
+	entry := widget.Entry{PlaceHolder: "password"}
+	w.SetContent(container.NewVBox(
+		label,
+		&entry,
+		widget.NewButton("verify", func() {
+			_, err = encrypt.Desencrypt([]byte(entry.Text))
+			if err != nil {
+				label.SetText("wrong password")
+				return
+			}
+
+			err = nil
+		}),
+	))
+
+	return nil
+}
+
 func makeAppTabsTab() fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		makeFirstTab(),
@@ -63,6 +110,21 @@ func main() {
 		Height: 600,
 	})
 
-	w.SetContent(makeAppTabsTab())
+	label := widget.NewLabel("Insert encryption password")
+	entry := widget.Entry{PlaceHolder: "password", Password: true}
+	w.SetContent(container.NewVBox(
+		label,
+		&entry,
+		widget.NewButton("verify", func() {
+			_, err := encrypt.Desencrypt([]byte(entry.Text))
+			if err != nil {
+				label.SetText("wrong password")
+				return
+			}
+
+			w.SetContent(makeAppTabsTab())
+		}),
+	))
+
 	w.ShowAndRun()
 }

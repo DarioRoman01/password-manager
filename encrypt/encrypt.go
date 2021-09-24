@@ -51,7 +51,7 @@ func EncryptFile(name string, key []byte) {
 }
 
 func Desencrypt(key []byte) ([]byte, error) {
-	ciphertext, err := ioutil.ReadFile("./claves.txt")
+	ciphertext, err := ioutil.ReadFile("../pwd")
 	if err != nil {
 		return nil, err
 	}
@@ -76,14 +76,14 @@ func Desencrypt(key []byte) ([]byte, error) {
 
 }
 
-func AddPassword(newPassword, key []byte) {
+func AddPassword(newPassword, key []byte) error {
 	content, err := Desencrypt(key)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	p := []byte(newPassword)
 	content = append(content, p...)
 
-	Encrypt(key, content)
+	return Encrypt(key, content)
 }
