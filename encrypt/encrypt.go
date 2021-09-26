@@ -28,16 +28,31 @@ func Encrypt(key, text []byte) error {
 
 	encrypted := gcm.Seal(nonce, nonce, text, nil)
 
-	file, err := os.Create("claves.txt")
+	file, err := os.OpenFile("../tmp/passwords", os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		return err
 	}
 
+	defer file.Close()
 	if _, err := file.Write(encrypted); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func NewFile(key []byte) error {
+	f, err := os.Create("passwords")
+	if err != nil {
+		return err
+	}
+
+	f.Close()
+	if err := os.Rename("passwords", "../tmp/passwords"); err != nil {
+		return err
+	}
+
+	return Encrypt(key, []byte("password manager uwu"))
 }
 
 func EncryptFile(name string, key []byte) {
@@ -51,7 +66,7 @@ func EncryptFile(name string, key []byte) {
 }
 
 func Desencrypt(key []byte) ([]byte, error) {
-	ciphertext, err := ioutil.ReadFile("../pwd")
+	ciphertext, err := ioutil.ReadFile("../tmp/passwords")
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/DarioRoman01/password_manager/encrypt"
 	"github.com/DarioRoman01/password_manager/passwords"
@@ -72,34 +73,29 @@ func SetPasswordTab() *container.TabItem {
 	return tab
 }
 
-func InitSessionView(w fyne.Window) (err error) {
-	label := widget.NewLabel("Insert encryption password")
-	entry := widget.Entry{PlaceHolder: "password"}
-	w.SetContent(container.NewVBox(
-		label,
-		&entry,
-		widget.NewButton("verify", func() {
-			_, err = encrypt.Desencrypt([]byte(entry.Text))
-			if err != nil {
-				label.SetText("wrong password")
-				return
-			}
-
-			err = nil
-		}),
-	))
-
-	return nil
-}
-
 func makeAppTabsTab() fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		makeFirstTab(),
 		SeePasswordsTab(),
-		container.NewTabItem("Tab 3", widget.NewLabel("Content of tab 3")),
+		SeePasswordsTab(),
 	)
 
 	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
+func confirmCallback(w fyne.Window, label *widget.Label, text string) func(bool) {
+	return func(response bool) {
+		if !response {
+			return
+		}
+
+		if err := encrypt.NewFile([]byte(text)); err != nil {
+			label.SetText("error while creating the new file")
+			return
+		}
+
+		w.SetContent(makeAppTabsTab())
+	}
 }
 
 func main() {
@@ -123,6 +119,13 @@ func main() {
 			}
 
 			w.SetContent(makeAppTabsTab())
+		}),
+		widget.NewButton("New", func() {
+			cnf := dialog.NewConfirm("Confimation", "Are you sure to create a new file?", confirmCallback(w, label, entry.Text), w)
+			cnf.SetConfirmText("Sure")
+			cnf.SetDismissText("Nah")
+			cnf.Show()
+
 		}),
 	))
 
