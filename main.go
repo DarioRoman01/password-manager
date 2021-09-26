@@ -90,7 +90,7 @@ func confirmCallback(w fyne.Window, label *widget.Label, text string) func(bool)
 		}
 
 		if err := encrypt.NewFile([]byte(text)); err != nil {
-			label.SetText("error while creating the new file")
+			label.SetText(err.Error())
 			return
 		}
 
