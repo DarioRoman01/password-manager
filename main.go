@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -24,15 +26,12 @@ func makeFirstTab() *container.TabItem {
 	return tab
 }
 
-func SeePasswordsTab() *container.TabItem {
+func SeePasswordsTab(pwd string) *container.TabItem {
 	tab := container.NewTabItem("See Passwords", widget.NewLabel("Content of tab 1"))
 	label := widget.NewLabel("Passwords")
-	entry := widget.Entry{PlaceHolder: "encryption password"}
 	tab.Content = container.NewVBox(
 		label,
-		&entry,
 		widget.NewButton("see passwords", func() {
-			pwd := entry.Text
 			content, err := encrypt.Desencrypt([]byte(pwd))
 			if err != nil {
 				label.Text = "Wrong password"
@@ -46,20 +45,17 @@ func SeePasswordsTab() *container.TabItem {
 	return tab
 }
 
-func SetPasswordTab() *container.TabItem {
+func SetPasswordTab(key string) *container.TabItem {
 	tab := container.NewTabItem("Set Password", widget.NewLabel("Content of tab 1"))
 	label := widget.NewLabel("Set Password")
 
-	keyEntry := widget.Entry{PlaceHolder: "Key"}
 	Pwdentry := widget.Entry{PlaceHolder: "new password"}
 
 	tab.Content = container.NewVBox(
 		label,
-		&keyEntry,
 		&Pwdentry,
 		widget.NewButton("add password", func() {
-			key := keyEntry.Text
-			pwd := Pwdentry.Text
+			pwd := fmt.Sprintf("\n%s", Pwdentry.Text)
 			err := encrypt.AddPassword([]byte(pwd), []byte(key))
 			if err != nil {
 				label.SetText("Something wrong happend")
@@ -73,11 +69,11 @@ func SetPasswordTab() *container.TabItem {
 	return tab
 }
 
-func makeAppTabsTab() fyne.CanvasObject {
+func makeAppTabsTab(key string) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		makeFirstTab(),
-		SeePasswordsTab(),
-		SeePasswordsTab(),
+		SeePasswordsTab(key),
+		SetPasswordTab(key),
 	)
 
 	return container.NewBorder(nil, nil, nil, nil, tabs)
@@ -94,7 +90,7 @@ func confirmCallback(w fyne.Window, label *widget.Label, text string) func(bool)
 			return
 		}
 
-		w.SetContent(makeAppTabsTab())
+		w.SetContent(makeAppTabsTab(text))
 	}
 }
 
@@ -118,7 +114,7 @@ func main() {
 				return
 			}
 
-			w.SetContent(makeAppTabsTab())
+			w.SetContent(makeAppTabsTab(entry.Text))
 		}),
 		widget.NewButton("New", func() {
 			cnf := dialog.NewConfirm("Confimation", "Are you sure to create a new file?", confirmCallback(w, label, entry.Text), w)
